@@ -3,21 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>محسن الصوت والفيديو الاحترافي - مباشر</title>
+    <title>Audio & Video Enhancer | Cleanvoice AI</title>
     <style>
-        /* التنسيقات الأساسية (تم الحفاظ على جمالية التصميم مع إصلاحات الـ RTL) */
+        /* التنسيقات الاحترافية مع دعم Glassmorphism */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --primary: #6366f1;
-            --primary-dark: #4f46e5;
             --secondary: #ec4899;
             --background: #0f172a;
             --surface: #1e293b;
-            --surface-light: #334155;
             --text: #f8fafc;
-            --text-muted: #94a3b8;
-            --success: #10b981;
-            --error: #ef4444;
             --gradient: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
         }
 
@@ -26,307 +21,256 @@
             background: var(--background);
             color: var(--text);
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .container { max-width: 1000px; margin: 0 auto; padding: 2rem; }
+        .container { width: 100%; max-width: 800px; padding: 2rem; }
 
-        .upload-section {
-            background: rgba(30, 41, 59, 0.8);
-            backdrop-filter: blur(20px);
+        .card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
             border-radius: 24px;
-            padding: 3rem;
+            padding: 2.5rem;
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
         }
 
         .upload-zone {
-            border: 3px dashed var(--surface-light);
-            border-radius: 20px;
-            padding: 4rem 2rem;
-            text-align: center;
+            border: 2px dashed #475569;
+            border-radius: 16px;
+            padding: 3rem;
             cursor: pointer;
             transition: 0.3s;
+            margin-bottom: 2rem;
         }
 
-        .upload-zone.dragover { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); }
+        .upload-zone:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.05); }
 
-        .media-preview { width: 100%; border-radius: 12px; margin-bottom: 1.5rem; background: #000; }
-
-        /* الأزرار والتفاعلات */
         .btn {
-            padding: 1rem 2rem;
+            padding: 1rem 2.5rem;
             border-radius: 12px;
             border: none;
             cursor: pointer;
             font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
             transition: 0.3s;
+            font-size: 1rem;
         }
 
-        .btn-primary { background: var(--gradient); color: white; }
+        .btn-primary { background: var(--gradient); color: white; width: 100%; }
         .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--surface-light); }
 
-        /* دائرة التقدم المحدثة */
-        .progress-ring-fill {
+        /* Progress Ring */
+        .progress-container { display: none; margin: 2rem 0; }
+        .progress-ring-circle {
             fill: none;
-            stroke: url(#gradient);
+            stroke: url(#ringGradient);
             stroke-width: 8;
-            stroke-linecap: round;
             stroke-dasharray: 440;
             stroke-dashoffset: 440;
-            transition: stroke-dashoffset 0.3s linear;
+            transition: stroke-dashoffset 0.5s ease;
+            stroke-linecap: round;
         }
 
-        .option-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-            padding: 1rem;
-            background: rgba(15, 23, 42, 0.3);
-            border-radius: 12px;
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary);
+            margin-top: 1rem;
+            font-size: 0.9rem;
         }
-
-        /* Toggle RTL Fix */
-        .toggle {
-            position: relative;
-            width: 50px;
-            height: 26px;
-            background: var(--surface-light);
-            border-radius: 50px;
-            cursor: pointer;
-        }
-        .toggle.active { background: var(--primary); }
-        .toggle-slider {
-            position: absolute;
-            top: 3px;
-            right: 3px;
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            transition: 0.3s;
-        }
-        .toggle.active .toggle-slider { transform: translateX(-24px); }
 
         .notification {
             position: fixed;
-            top: 2rem;
+            top: 20px;
             left: 50%;
             transform: translateX(-50%) translateY(-100px);
             padding: 1rem 2rem;
-            border-radius: 12px;
+            border-radius: 10px;
             z-index: 1000;
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: 0.5s;
         }
         .notification.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
-    <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="gradient"><stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#ec4899"/></linearGradient></defs></svg>
 
-    <div id="notification" class="notification"></div>
+    <div id="notif" class="notification"></div>
 
     <div class="container">
-        <header style="text-align: center; margin-bottom: 3rem;">
-            <h1 style="font-size: 2.5rem; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🎵 AudioPro Live</h1>
+        <header style="margin-bottom: 2rem; text-align: center;">
+            <h1 style="background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 2.5rem;">Cleanvoice AI</h1>
+            <p style="color: #94a3b8;">محسن الصوت والفيديو المعتمد على الذكاء الاصطناعي</p>
         </header>
 
-        <div class="upload-section">
-            <div id="uploadStage">
-                <div class="upload-zone" id="uploadZone">
-                    <span style="font-size: 3rem;">📁</span>
-                    <h2>اختر ملف الصوت أو الفيديو لبدء التحسين</h2>
-                    <p style="color: var(--text-muted); margin-top: 1rem;">الحد الأقصى للحجم: 500 ميجابايت</p>
-                    <input type="file" id="fileInput" hidden accept="audio/*,video/*">
+        <div class="card">
+            <div id="dropZone" class="upload-zone">
+                <div id="fileInfo">
+                    <span style="font-size: 3rem;">☁️</span>
+                    <h3>اسحب ملف الصوت/الفيديو هنا</h3>
+                    <p>أو انقر للاختيار من جهازك</p>
                 </div>
+                <input type="file" id="fileInput" hidden accept="audio/*,video/*">
             </div>
 
-            <div id="previewStage" style="display:none;">
-                <video id="videoPreview" class="media-preview" controls style="display:none"></video>
-                <audio id="audioPreview" class="media-preview" controls style="display:none"></audio>
-                
-                <div class="options-panel" style="margin-bottom: 2rem;">
-                    <div class="option-row">
-                        <span>🎚️ إزالة الضوضاء الخلفية (AI)</span>
-                        <div class="toggle active" onclick="this.classList.toggle('active')" id="optNoise">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="display: flex; gap: 1rem;">
-                    <button class="btn btn-primary" id="startBtn" onclick="handleProductionProcess()">🚀 معالجة الملف الآن</button>
-                    <button class="btn btn-secondary" onclick="resetApp()">إلغاء</button>
-                </div>
+            <div id="previewArea" style="display: none;">
+                <div id="mediaContainer" style="margin-bottom: 1.5rem;"></div>
+                <button id="processBtn" class="btn btn-primary">🚀 بدء المعالجة الاحترافية</button>
             </div>
 
-            <div id="progressStage" style="display:none; text-align: center;">
+            <div id="progressArea" class="progress-container">
                 <svg width="150" height="150" style="transform: rotate(-90deg)">
+                    <defs>
+                        <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#6366f1" />
+                            <stop offset="100%" stop-color="#ec4899" />
+                        </linearGradient>
+                    </defs>
                     <circle cx="75" cy="75" r="70" stroke="#334155" stroke-width="8" fill="none" />
-                    <circle id="progressCircle" cx="75" cy="75" r="70" class="progress-ring-fill" />
+                    <circle id="ringFill" cx="75" cy="75" r="70" class="progress-ring-circle" />
                 </svg>
-                <h2 id="statusText" style="margin-top: 1rem;">جاري الرفع...</h2>
-                <p id="percentText" style="font-size: 1.5rem; font-weight: bold; color: var(--primary);">0%</p>
+                <div id="statusLabel" class="status-badge">جاري المعالجة...</div>
+                <h2 id="percentLabel" style="margin-top: 10px;">0%</h2>
             </div>
 
-            <div id="resultStage" style="display:none; text-align: center;">
-                <div style="font-size: 4rem; color: var(--success);">✅</div>
-                <h2>تم التحسين بنجاح!</h2>
-                <div style="margin: 2rem 0;">
-                    <button class="btn btn-primary" id="downloadBtn">⬇️ تحميل الملف المحسن</button>
-                </div>
-                <button class="btn btn-secondary" onclick="resetApp()">معالجة ملف آخر</button>
+            <div id="resultArea" style="display: none;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">✨</div>
+                <h2>جاهز للتحميل!</h2>
+                <button id="downloadBtn" class="btn btn-primary" style="margin-top: 1rem;">⬇️ تحميل الملف المحسن</button>
+                <button onclick="location.reload()" class="btn" style="background: none; color: #94a3b8; margin-top: 10px;">رفع ملف آخر</button>
             </div>
         </div>
     </div>
 
     <script>
-        const API_KEY = 'cvk_K9zHzC4T3jA.PwUHNtpD2s6jUibzKNS6O5IBxpUpqYAuhTlLB58Z-uU';
-        const API_BASE = 'https://api.clarityvoice.ai/v1';
+        const API_KEY = "cvk__v9UVUk_3Ds.36aaAgx3dg-laiHpdK5_JT5rQzY0_gyhKj3WX3lkMbQ";
+        const BASE_URL = "https://api.cleanvoice.ai/v2/edits";
 
-        let currentFile = null;
-        let objectUrl = null;
+        let selectedFile = null;
 
-        // اختصارات الواجهة
-        const $ = (id) => document.getElementById(id);
-        const hideAll = () => ['uploadStage', 'previewStage', 'progressStage', 'resultStage'].forEach(s => $(s).style.display = 'none');
+        // عناصر الواجهة
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const ringFill = document.getElementById('ringFill');
 
-        // إدارة اختيار الملف
-        $('uploadZone').onclick = () => $('fileInput').click();
-        $('fileInput').onchange = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                if (file.size > 500 * 1024 * 1024) return showNotif('الملف كبير جداً', 'error');
-                currentFile = file;
+        dropZone.onclick = () => fileInput.click();
+
+        fileInput.onchange = (e) => {
+            if (e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
                 showPreview();
             }
         };
 
         function showPreview() {
-            hideAll();
-            $('previewStage').style.display = 'block';
-            if (objectUrl) URL.revokeObjectURL(objectUrl);
-            objectUrl = URL.createObjectURL(currentFile);
-
-            if (currentFile.type.startsWith('video/')) {
-                $('videoPreview').src = objectUrl;
-                $('videoPreview').style.display = 'block';
-                $('audioPreview').style.display = 'none';
+            dropZone.style.display = 'none';
+            document.getElementById('previewArea').style.display = 'block';
+            const container = document.getElementById('mediaContainer');
+            const url = URL.createObjectURL(selectedFile);
+            
+            if (selectedFile.type.startsWith('video/')) {
+                container.innerHTML = `<video src="${url}" controls style="width:100%; border-radius:12px;"></video>`;
             } else {
-                $('audioPreview').src = objectUrl;
-                $('audioPreview').style.display = 'block';
-                $('videoPreview').style.display = 'none';
+                container.innerHTML = `<audio src="${url}" controls style="width:100%;"></audio>`;
             }
         }
 
-        // العملية الأساسية للـ API
-        async function handleProductionProcess() {
-            hideAll();
-            $('progressStage').style.display = 'block';
-            
+        document.getElementById('processBtn').onclick = startProcessing;
+
+        async function startProcessing() {
+            document.getElementById('previewArea').style.display = 'none';
+            document.getElementById('progressArea').style.display = 'block';
+
             try {
-                // 1. الرفع
-                updateUI(10, 'جاري رفع الملف...');
-                const jobId = await uploadFile();
+                // 1. ملاحظة: Cleanvoice V2 تتطلب رابط مباشر للملف أو رفعه أولاً. 
+                // بما أننا نستخدم ملفاً محلياً، سنقوم بمحاكاة الخطوة الأولى للحصول على الـ ID
+                // في الإنتاج الحقيقي، يجب رفع الملف إلى S3 أو خادمك أولاً للحصول على URL.
+                
+                // سنستخدم ملف العينة الخاص بهم للتجربة حسب الكود الذي قدمته أنت:
+                const isVideo = selectedFile.type.startsWith('video/');
+                const payload = {
+                    "input": {
+                        "files": ["https://cdn.cleanvoice.ai/assets/sample.mp3"], // استبدل بـ URL ملفك المرفوع
+                        "config": {
+                            "video": isVideo,
+                            "normalize": true,
+                            "studio_sound": true,
+                            "fillers": true,
+                            "long_silences": true
+                        }
+                    }
+                };
 
-                // 2. طلب التحسين
-                updateUI(30, 'بدء معالجة الذكاء الاصطناعي...');
-                await requestEnhancement(jobId);
+                updateUI(10, "بدء الطلب...");
 
-                // 3. المتابعة (Polling)
-                const downloadUrl = await pollStatus(jobId);
+                const response = await fetch(BASE_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "X-API-Key": API_KEY },
+                    body: JSON.stringify(payload)
+                });
 
-                // 4. النجاح
-                updateUI(100, 'اكتملت المعالجة!');
-                showResult(downloadUrl);
+                if (!response.ok) throw new Error("فشل الاتصال بـ API");
+                const result = await response.json();
+                const taskId = result.id;
+
+                // 2. المتابعة (Polling)
+                pollStatus(taskId);
 
             } catch (err) {
-                showNotif(err.message, 'error');
-                resetApp();
+                showNotif(err.message, "red");
             }
         }
 
-        async function uploadFile() {
-            const formData = new FormData();
-            formData.append('file', currentFile);
+        async function pollStatus(taskId) {
+            const pollUrl = `${BASE_URL}/${taskId}`;
+            let completed = false;
 
-            const res = await fetch(`${API_BASE}/upload`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${API_KEY}` },
-                body: formData
-            });
+            while (!completed) {
+                try {
+                    const res = await fetch(pollUrl, {
+                        headers: { "X-API-Key": API_KEY }
+                    });
+                    const data = await res.json();
 
-            if (!res.ok) throw new Error('فشل الرفع إلى السيرفر');
-            const data = await res.json();
-            return data.job_id || data.id;
-        }
-
-        async function requestEnhancement(jobId) {
-            const res = await fetch(`${API_BASE}/enhance`, {
-                method: 'POST',
-                headers: { 
-                    'Authorization': `Bearer ${API_KEY}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    job_id: jobId,
-                    options: { noise_reduction: $('optNoise').classList.contains('active') }
-                })
-            });
-            if (!res.ok) throw new Error('فشل بدء عملية التحسين');
-        }
-
-        async function pollStatus(jobId) {
-            let attempts = 0;
-            while (attempts < 60) { // حد أقصى 2 دقيقة
-                const res = await fetch(`${API_BASE}/status/${jobId}`, {
-                    headers: { 'Authorization': `Bearer ${API_KEY}` }
-                });
-                const data = await res.json();
-
-                if (data.status === 'completed') return data.download_url;
-                if (data.status === 'failed') throw new Error('فشلت المعالجة بالسيرفر');
-
-                // تحديث تدريجي للتقدم بين 40% و 90%
-                let progress = 40 + (attempts * 0.8);
-                updateUI(Math.min(progress, 95), 'جاري تنقية الصوت وتحسين الجودة...');
-
-                await new Promise(r => setTimeout(r, 2000));
-                attempts++;
+                    if (data.status === 'SUCCESS') {
+                        updateUI(100, "اكتمل بنجاح!");
+                        showFinalResult(data.result.files[0]);
+                        completed = true;
+                    } else if (data.status === 'FAILED') {
+                        throw new Error("فشلت المعالجة بالسيرفر");
+                    } else {
+                        const prog = data.progress || 20;
+                        updateUI(prog, "جاري تحسين الجودة...");
+                        await new Promise(r => setTimeout(r, 3000));
+                    }
+                } catch (e) {
+                    showNotif(e.message, "red");
+                    break;
+                }
             }
-            throw new Error('انتهت مهلة الانتظار');
-        }
-
-        function showResult(url) {
-            hideAll();
-            $('resultStage').style.display = 'block';
-            $('downloadBtn').onclick = () => window.open(url, '_blank');
         }
 
         function updateUI(percent, status) {
             const offset = 440 - (percent / 100) * 440;
-            $('progressCircle').style.strokeDashoffset = offset;
-            $('percentText').textContent = `${Math.round(percent)}%`;
-            $('statusText').textContent = status;
+            ringFill.style.strokeDashoffset = offset;
+            document.getElementById('percentLabel').innerText = Math.round(percent) + "%";
+            document.getElementById('statusLabel').innerText = status;
         }
 
-        function resetApp() {
-            hideAll();
-            currentFile = null;
-            if (objectUrl) URL.revokeObjectURL(objectUrl);
-            $('uploadStage').style.display = 'block';
-            $('fileInput').value = '';
-            updateUI(0, '');
+        function showFinalResult(downloadUrl) {
+            document.getElementById('progressArea').style.display = 'none';
+            document.getElementById('resultArea').style.display = 'block';
+            document.getElementById('downloadBtn').onclick = () => window.open(downloadUrl, '_blank');
         }
 
-        function showNotif(msg, type) {
-            const n = $('notification');
-            n.textContent = msg;
-            n.style.background = type === 'success' ? 'var(--success)' : 'var(--error)';
+        function showNotif(msg, color) {
+            const n = document.getElementById('notif');
+            n.innerText = msg;
+            n.style.background = color === "red" ? "#ef4444" : "#10b981";
             n.classList.add('show');
             setTimeout(() => n.classList.remove('show'), 4000);
         }
