@@ -2,68 +2,555 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>AudioPro Production</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AudioPro Production - معالجة الصوت بالذكاء الاصطناعي</title>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; }
-        .box { background: #1e293b; padding: 2rem; border-radius: 20px; text-align: center; width: 400px; }
-        .btn { background: #6366f1; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 10px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); 
+            color: white; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            min-height: 100vh;
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .box { 
+            background: rgba(30, 41, 59, 0.8); 
+            backdrop-filter: blur(10px);
+            padding: 2.5rem; 
+            border-radius: 24px; 
+            text-align: center; 
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        
+        h2 { 
+            margin-bottom: 1.5rem; 
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        #filePicker {
+            display: none;
+        }
+        
+        .file-label {
+            display: block;
+            padding: 20px;
+            border: 2px dashed #6366f1;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        .file-label:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: #818cf8;
+            transform: translateY(-2px);
+        }
+        
+        .file-label.has-file {
+            border-style: solid;
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+        }
+        
+        .file-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .file-text {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        .file-name {
+            color: #22c55e;
+            font-weight: 600;
+            margin-top: 8px;
+            word-break: break-all;
+        }
+        
+        .btn { 
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); 
+            color: white; 
+            border: none; 
+            padding: 14px 28px; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            width: 100%; 
+            margin-top: 20px; 
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: #475569;
+        }
+        
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        @keyframes spin {
+            to { transform: translateY(-50%) rotate(360deg); }
+        }
+        
+        #status {
+            margin-top: 24px;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .status-info {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+        }
+        
+        .status-success {
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        
+        .status-error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+        
+        .status-warning {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #fcd34d;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .download-link {
+            display: inline-block;
+            background: #22c55e;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .download-link:hover {
+            background: #16a34a;
+            transform: scale(1.05);
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+            text-align: right;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+        
+        .feature-item::before {
+            content: '✓';
+            color: #22c55e;
+            font-weight: bold;
+        }
+        
+        .error-details {
+            font-size: 0.85rem;
+            margin-top: 8px;
+            opacity: 0.9;
+        }
     </style>
+<base target="_blank">
 </head>
 <body>
-    <div class="box">
-        <h2>معالجة ملف من جهازك</h2>
-        <input type="file" id="filePicker" style="margin: 20px 0;">
-        <button class="btn" onclick="uploadAndProcess()">رفع ومعالجة الملف</button>
-        <div id="status" style="margin-top: 20px;"></div>
+    <div class="container">
+        <div class="box">
+            <h2>🎙️ معالجة الصوت بالذكاء الاصطناعي</h2>
+            
+            <div class="features">
+                <div class="feature-item">إزالة الكلمات الزائدة</div>
+                <div class="feature-item">تنقية الضجيج</div>
+                <div class="feature-item">تعزيز جودة الصوت</div>
+                <div class="feature-item">إزالة الصمت الطويل</div>
+            </div>
+            
+            <div class="file-input-wrapper">
+                <input type="file" id="filePicker" accept="audio/*,video/*">
+                <label for="filePicker" class="file-label" id="fileLabel">
+                    <div class="file-icon">📁</div>
+                    <div class="file-text">اضغط لاختيار ملف صوتي أو فيديو</div>
+                    <div class="file-name" id="fileName"></div>
+                </label>
+            </div>
+            
+            <button class="btn" id="processBtn" onclick="uploadAndProcess()">
+                رفع ومعالجة الملف
+            </button>
+            
+            <div id="status" style="display: none;"></div>
+            
+            <div class="progress-bar" id="progressBar" style="display: none;">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
     </div>
 
     <script>
+        // ⚠️ تحذير أمني: يجب نقل مفتاح API إلى الخادم (Backend) في الإنتاج
+        // هذا المفتاح معرض للخطر إذا كان في كود Frontend
         const API_KEY = "cvk__v9UVUk_3Ds.36aaAgx3dg-laiHpdK5_JT5rQzY0_gyhKj3WX3lkMbQ";
+        
+        const filePicker = document.getElementById('filePicker');
+        const fileLabel = document.getElementById('fileLabel');
+        const fileName = document.getElementById('fileName');
+        const processBtn = document.getElementById('processBtn');
+        const statusDiv = document.getElementById('status');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        
+        let pollInterval = null;
+        
+        // تحديث واجهة اختيار الملف
+        filePicker.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                fileLabel.classList.add('has-file');
+                fileName.textContent = file.name + ' (' + formatFileSize(file.size) + ')';
+            } else {
+                fileLabel.classList.remove('has-file');
+                fileName.textContent = '';
+            }
+        });
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function showStatus(message, type = 'info', details = '') {
+            statusDiv.style.display = 'flex';
+            statusDiv.className = `status-${type}`;
+            statusDiv.innerHTML = `<div>${message}</div>${details ? `<div class="error-details">${details}</div>` : ''}`;
+        }
+        
+        function updateProgress(percent) {
+            progressBar.style.display = 'block';
+            progressFill.style.width = percent + '%';
+        }
+        
+        function setLoading(loading) {
+            processBtn.disabled = loading;
+            if (loading) {
+                processBtn.classList.add('loading');
+                processBtn.textContent = 'جاري المعالجة...';
+            } else {
+                processBtn.classList.remove('loading');
+                processBtn.textContent = 'رفع ومعالجة الملف';
+            }
+        }
         
         async function uploadAndProcess() {
             const fileInput = document.getElementById('filePicker');
-            if (fileInput.files.length === 0) return alert("اختر ملفاً أولاً");
-
+            
+            if (fileInput.files.length === 0) {
+                showStatus('⚠️ الرجاء اختيار ملف أولاً', 'warning');
+                return;
+            }
+            
             const file = fileInput.files[0];
-            const status = document.getElementById('status');
             
-            // 1. رفع الملف لسيرفر مؤقت (File.io) للحصول على رابط
-            status.innerText = "جاري رفع الملف للسيرفر المؤقت...";
-            const formData = new FormData();
-            formData.append('file', file);
+            // التحقق من نوع الملف
+            const validTypes = ['audio/', 'video/'];
+            const isValidType = validTypes.some(type => file.type.startsWith(type));
             
-            const uploadRes = await fetch('https://file.io', { method: 'POST', body: formData });
-            const uploadData = await uploadRes.json();
-            const fileUrl = uploadData.link;
-
-            // 2. إرسال الرابط إلى Cleanvoice
-            status.innerText = "تم الرفع! جاري المعالجة بـ AI...";
-            const processRes = await fetch('https://api.cleanvoice.ai/v2/edits', {
-                method: 'POST',
-                headers: { 'X-API-Key': API_KEY, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ "input": { "files": [fileUrl], "config": { "studio_sound": true } } })
-            });
-
-            if (processRes.status === 402) return status.innerText = "خطأ: رصيد الـ API منتهي.";
-            const processData = await processRes.json();
+            if (!isValidType && !file.name.match(/\.(mp3|wav|m4a|flac|ogg|mp4|mov|mkv|webm|avi)$/i)) {
+                showStatus('⚠️ يرجى اختيار ملف صوتي أو فيديو صالح', 'warning');
+                return;
+            }
             
-            // 3. المتابعة
-            pollStatus(processData.id);
-        }
-
-        async function pollStatus(id) {
-            const check = setInterval(async () => {
-                const res = await fetch(`https://api.cleanvoice.ai/v2/edits/${id}`, { headers: { 'X-API-Key': API_KEY } });
-                const data = await res.json();
-                document.getElementById('status').innerText = "الحالة: " + data.status;
-
-                if (data.status === 'SUCCESS') {
-                    clearInterval(check);
-                    const link = data.result.files ? data.result.files[0] : data.download_url;
-                    document.getElementById('status').innerHTML = `<a href="${link}" target="_blank" style="color:white">✅ اكتملت المعالجة - اضغط للتحميل</a>`;
+            // إيقاف أي polling سابق
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+            
+            setLoading(true);
+            updateProgress(10);
+            
+            try {
+                // 1. رفع الملف إلى File.io للحصول على رابط مؤقت
+                showStatus('⏳ جاري رفع الملف إلى السيرفر المؤقت...', 'info');
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const uploadController = new AbortController();
+                const uploadTimeout = setTimeout(() => uploadController.abort(), 60000); // 60 ثانية timeout
+                
+                const uploadRes = await fetch('https://file.io', { 
+                    method: 'POST', 
+                    body: formData,
+                    signal: uploadController.signal
+                });
+                
+                clearTimeout(uploadTimeout);
+                
+                if (!uploadRes.ok) {
+                    throw new Error(`فشل رفع الملف: ${uploadRes.status} ${uploadRes.statusText}`);
                 }
-            }, 5000);
+                
+                const uploadData = await uploadRes.json();
+                
+                if (!uploadData.link && !uploadData.url) {
+                    throw new Error('لم يتم استلام رابط الملف من السيرفر');
+                }
+                
+                const fileUrl = uploadData.link || uploadData.url;
+                updateProgress(30);
+                
+                // 2. إرسال الرابط إلى Cleanvoice API
+                showStatus('✅ تم الرفع! جاري المعالجة بالذكاء الاصطناعي...', 'info');
+                
+                const isVideo = file.type.startsWith('video/') || file.name.match(/\.(mp4|mov|mkv|webm|avi)$/i);
+                
+                const processBody = {
+                    input: {
+                        files: [fileUrl],
+                        config: {
+                            studio_sound: "nightly",  // استخدام "nightly" الموصى به بدلاً من true [^6^]
+                            remove_noise: true,
+                            fillers: true,            // إزالة الكلمات الزائدة (um, uh)
+                            long_silences: true,      // إزالة الصمت الطويل
+                            normalize: true,          // توحيد مستوى الصوت
+                            video: isVideo            // تحديد إذا كان ملف فيديو [^6^]
+                        }
+                    }
+                };
+                
+                const processRes = await fetch('https://api.cleanvoice.ai/v2/edits', {
+                    method: 'POST',
+                    headers: { 
+                        'X-API-Key': API_KEY, 
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify(processBody)
+                });
+                
+                if (processRes.status === 401) {
+                    throw new Error('مفتاح API غير صالح أو منتهي الصلاحية');
+                }
+                
+                if (processRes.status === 402) {
+                    throw newError('رصيد API منتهي. يرجى شحن حسابك في Cleanvoice.');
+                }
+                
+                if (processRes.status === 429) {
+                    throw new Error('تم تجاوز حد الطلبات. يرجى المحاولة لاحقاً.');
+                }
+                
+                if (!processRes.ok) {
+                    const errorText = await processRes.text();
+                    throw new Error(`خطأ في المعالجة: ${processRes.status} - ${errorText}`);
+                }
+                
+                const processData = await processRes.json();
+                
+                if (!processData.id) {
+                    throw new Error('لم يتم استلام معرف المهمة من API');
+                }
+                
+                updateProgress(50);
+                
+                // 3. متابعة حالة المعالجة
+                pollStatus(processData.id);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                setLoading(false);
+                updateProgress(0);
+                
+                let errorMessage = '❌ حدث خطأ أثناء المعالجة';
+                let errorDetails = error.message;
+                
+                if (error.name === 'AbortError') {
+                    errorMessage = '⏱️ انتهت مهلة الرفع';
+                    errorDetails = 'الملف كبير جداً أو الاتصال بطيء. جرب ملفاً أصغر.';
+                } else if (error.message.includes('Failed to fetch')) {
+                    errorMessage = '🔌 مشكلة في الاتصال';
+                    errorDetails = 'تأكد من اتصالك بالإنترنت وحاول مرة أخرى.';
+                }
+                
+                showStatus(errorMessage, 'error', errorDetails);
+            }
         }
+        
+        async function pollStatus(id) {
+            let attempts = 0;
+            const maxAttempts = 60; // 5 دقائق كحد أقصى (60 × 5 ثواني)
+            
+            pollInterval = setInterval(async () => {
+                attempts++;
+                
+                if (attempts > maxAttempts) {
+                    clearInterval(pollInterval);
+                    setLoading(false);
+                    showStatus('⏱️ انتهت مهلة المعالجة', 'error', 'المعالجة تستغرق وقتاً طويلاً. تحقق من حالة الملف لاحقاً.');
+                    return;
+                }
+                
+                try {
+                    const res = await fetch(`https://api.cleanvoice.ai/v2/edits/${id}`, { 
+                        headers: { 'X-API-Key': API_KEY } 
+                    });
+                    
+                    if (!res.ok) {
+                        throw new Error(`فشل جلب الحالة: ${res.status}`);
+                    }
+                    
+                    const data = await res.json();
+                    
+                    // تحديث نسبة التقدم
+                    const progress = Math.min(50 + (attempts * 0.8), 95);
+                    updateProgress(progress);
+                    
+                    // عرض الحالة الحالية
+                    const statusText = getStatusText(data.status);
+                    showStatus(`⏳ ${statusText}`, 'info');
+                    
+                    if (data.status === 'SUCCESS' || data.status === 'completed') {
+                        clearInterval(pollInterval);
+                        updateProgress(100);
+                        setLoading(false);
+                        
+                        // استخراج رابط التحميل
+                        let downloadLink = null;
+                        
+                        if (data.result && data.result.files && data.result.files.length > 0) {
+                            downloadLink = data.result.files[0];
+                        } else if (data.download_url) {
+                            downloadLink = data.download_url;
+                        } else if (data.result && data.result.download_url) {
+                            downloadLink = data.result.download_url;
+                        }
+                        
+                        if (downloadLink) {
+                            showStatus(
+                                `✅ اكتملت المعالجة بنجاح!`, 
+                                'success',
+                                `<a href="${downloadLink}" target="_blank" class="download-link">⬇️ تحميل الملف المعالج</a>`
+                            );
+                        } else {
+                            showStatus('✅ اكتملت المعالجة!', 'success', 'الملف جاهز للتحميل من حسابك في Cleanvoice.');
+                        }
+                        
+                    } else if (data.status === 'FAILED' || data.status === 'failed' || data.status === 'ERROR') {
+                        clearInterval(pollInterval);
+                        setLoading(false);
+                        const errorMsg = data.error || data.message || 'حدث خطأ غير معروف';
+                        showStatus('❌ فشلت المعالجة', 'error', errorMsg);
+                    }
+                    
+                } catch (error) {
+                    console.error('Polling error:', error);
+                    // لا نوقف ال polling عند خطأ مؤقت، نستمر في المحاولة
+                }
+            }, 5000); // كل 5 ثواني
+        }
+        
+        function getStatusText(status) {
+            const statusMap = {
+                'PENDING': 'في الانتظار...',
+                'PROCESSING': 'جاري المعالجة بالذكاء الاصطناعي...',
+                'SUCCESS': 'اكتملت',
+                'FAILED': 'فشلت',
+                'pending': 'في الانتظار...',
+                'processing': 'جاري المعالجة...',
+                'completed': 'اكتملت',
+                'failed': 'فشلت'
+            };
+            return statusMap[status] || `الحالة: ${status}`;
+        }
+        
+        // تنظيف عند إغلاق الصفحة
+        window.addEventListener('beforeunload', () => {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+        });
     </script>
 </body>
 </html>
