@@ -5,68 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AudioPro Enhancer | Cleanvoice AI</title>
     <style>
-        /* التنسيقات الاحترافية Glassmorphism */
+        /* التنسيقات Glassmorphism المتقدمة */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --primary: #6366f1;
             --secondary: #ec4899;
             --background: #0f172a;
             --surface: #1e293b;
-            --surface-light: #334155;
             --text: #f8fafc;
-            --text-muted: #94a3b8;
             --gradient: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background: var(--background);
             color: var(--text);
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
         }
-
-        .container { width: 100%; max-width: 800px; padding: 2rem; }
 
         .card {
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(20px);
             border-radius: 24px;
             padding: 2.5rem;
+            width: 90%;
+            max-width: 600px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        .upload-zone {
-            border: 3px dashed var(--surface-light);
-            border-radius: 20px;
-            padding: 4rem 2rem;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-bottom: 2rem;
-        }
-
-        .upload-zone:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.05); }
-
-        .btn {
-            padding: 1rem 2rem;
-            border-radius: 12px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-primary { background: var(--gradient); color: white; width: 100%; justify-content: center; }
-        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .progress-section { display: none; margin-top: 2rem; }
         .progress-ring-fill {
             fill: none;
             stroke: url(#ringGradient);
@@ -77,212 +48,173 @@
             stroke-linecap: round;
         }
 
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            background: var(--gradient);
+            color: white;
+            width: 100%;
+            margin-top: 1.5rem;
+        }
+
         .status-badge {
             display: inline-block;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
             background: rgba(99, 102, 241, 0.2);
-            color: var(--primary);
+            color: #818cf8;
             margin-top: 1rem;
             font-size: 0.9rem;
         }
 
-        .notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            padding: 1rem 2rem;
-            border-radius: 10px;
-            z-index: 1000;
-            transition: 0.5s;
-            color: white;
+        .upload-zone {
+            border: 2px dashed #334155;
+            padding: 3rem;
+            border-radius: 20px;
+            cursor: pointer;
         }
-        .notification.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
 
-    <div id="notification" class="notification"></div>
-
-    <div class="container">
-        <header style="margin-bottom: 2rem; text-align: center;">
-            <h1 style="background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 2.5rem; font-weight: 800;">AudioPro Enhancer</h1>
-            <p style="color: var(--text-muted);">تحسين جودة الصوت والفيديو بالذكاء الاصطناعي</p>
-        </header>
-
-        <div class="card">
-            <div id="uploadZone" class="upload-zone">
-                <span style="font-size: 4rem; display: block; margin-bottom: 1rem;">📁</span>
-                <h2>اسحب الملف هنا أو انقر للاختيار</h2>
-                <p style="color: var(--text-muted); margin-top: 0.5rem;">يدعم MP3, WAV, MP4 والمزيد</p>
-                <input type="file" id="fileInput" hidden accept="audio/*,video/*">
+    <div class="card">
+        <h1 style="margin-bottom: 0.5rem; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">AudioPro Enhancer</h1>
+        
+        <div id="uploadArea">
+            <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+                <div style="font-size: 3rem;">📁</div>
+                <p>اضغط هنا لرفع ملف الصوت أو الفيديو</p>
+                <input type="file" id="fileInput" hidden onchange="handleFile(this)">
             </div>
+        </div>
 
-            <div id="previewArea" style="display: none;">
-                <div id="mediaContainer" style="margin-bottom: 2rem;"></div>
-                <button id="enhanceBtn" class="btn btn-primary">✨ بدء التحسين الاحترافي</button>
-            </div>
+        <div id="progressArea" style="display: none;">
+            <svg width="150" height="150" style="transform: rotate(-90deg)">
+                <defs>
+                    <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#6366f1" />
+                        <stop offset="100%" stop-color="#ec4899" />
+                    </linearGradient>
+                </defs>
+                <circle cx="75" cy="75" r="70" stroke="#334155" stroke-width="8" fill="none" />
+                <circle id="progressCircle" cx="75" cy="75" r="70" class="progress-ring-fill" />
+            </svg>
+            <h2 id="progressPercent">0%</h2>
+            <div id="statusMessage" class="status-badge">جاري المعالجة...</div>
+        </div>
 
-            <div id="progressSection" class="progress-section">
-                <svg width="150" height="150" style="transform: rotate(-90deg)">
-                    <defs>
-                        <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#6366f1" />
-                            <stop offset="100%" stop-color="#ec4899" />
-                        </linearGradient>
-                    </defs>
-                    <circle cx="75" cy="75" r="70" stroke="#334155" stroke-width="8" fill="none" />
-                    <circle id="progressCircle" cx="75" cy="75" r="70" class="progress-ring-fill" />
-                </svg>
-                <h2 id="progressText" style="margin-top: 1rem;">0%</h2>
-                <div id="progressStatus" class="status-badge">جاري الرفع...</div>
-            </div>
-
-            <div id="resultArea" style="display: none;">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
-                <h2>اكتمل التحسين!</h2>
-                <button id="downloadBtn" class="btn btn-primary" style="margin-top: 1.5rem;">⬇️ تحميل الملف المحسن</button>
-                <button onclick="location.reload()" class="btn" style="background: none; color: var(--text-muted); margin-top: 10px;">معالجة ملف جديد</button>
-            </div>
+        <div id="resultArea" style="display: none;">
+            <div style="font-size: 3rem;">✅</div>
+            <h2>جاهز للتحميل!</h2>
+            <button id="downloadBtn" class="btn">تحميل الملف المحسن</button>
+            <button onclick="location.reload()" style="background:none; border:none; color:#94a3b8; margin-top:10px; cursor:pointer;">رفع ملف آخر</button>
         </div>
     </div>
 
     <script>
-        // الإعدادات المحدثة لـ Cleanvoice V2
-        const API_KEY = "cvk__v9UVUk_3Ds.36aaAgx3dg-laiHpdK5_JT5rQzY0_gyhKj3WX3lkMbQ";
-        const API_BASE_URL = "https://api.cleanvoice.ai/v2";
+        const API_KEY = "cvk__v9UVUk_3Ds.36aaAgx3dg-laiHpdK5_JT5rQzY0_gyhKj3WX3lkMbQ"; // مفتاحك الفعال
+        const API_URL = "https://api.cleanvoice.ai/v2/edits";
 
-        let currentFile = null;
-
-        const fileInput = document.getElementById('fileInput');
-        const uploadZone = document.getElementById('uploadZone');
-
-        uploadZone.onclick = () => fileInput.click();
-
-        fileInput.onchange = (e) => {
-            if (e.target.files.length > 0) {
-                currentFile = e.target.files[0];
-                showPreview();
-            }
-        };
-
-        function showPreview() {
-            uploadZone.style.display = 'none';
-            document.getElementById('previewArea').style.display = 'block';
-            const container = document.getElementById('mediaContainer');
-            const url = URL.createObjectURL(currentFile);
+        async function handleFile(input) {
+            if (!input.files[0]) return;
             
-            if (currentFile.type.startsWith('video/')) {
-                container.innerHTML = `<video src="${url}" controls style="width:100%; border-radius:12px;"></video>`;
-            } else {
-                container.innerHTML = `<audio src="${url}" controls style="width:100%;"></audio>`;
-            }
-        }
-
-        document.getElementById('enhanceBtn').onclick = startEnhancement;
-
-        async function startEnhancement() {
-            document.getElementById('previewArea').style.display = 'none';
-            document.getElementById('progressSection').style.display = 'block';
-
+            document.getElementById('uploadArea').style.display = 'none';
+            document.getElementById('progressArea').style.display = 'block';
+            
             try {
-                // ملاحظة تقنية: Cleanvoice V2 تتطلب رابط URL للملف. 
-                // نستخدم ملف العينة للاختبار كما هو موضح في كود الشركة
-                const payload = {
-                    "input": {
-                        "files": ["https://cdn.cleanvoice.ai/assets/sample.mp3"], 
-                        "config": {
-                            "video": currentFile.type.startsWith('video/'),
-                            "normalize": true,
-                            "studio_sound": true,
-                            "fillers": true
-                        }
-                    }
-                };
-
-                updateProgressUI(10, "بدء الطلب...");
-
-                const response = await fetch(`${API_BASE_URL}/edits`, {
+                // خطوة 1: إرسال الطلب (استخدام عينة صوتية للاختبار أو رفع ملفك)
+                updateUI(15, "جاري إرسال الطلب...");
+                
+                const response = await fetch(API_URL, {
                     method: "POST",
-                    headers: { 
-                        "Content-Type": "application/json", 
-                        "X-API-Key": API_KEY 
-                    },
-                    body: JSON.stringify(payload)
+                    headers: { "Content-Type": "application/json", "X-API-Key": API_KEY },
+                    body: JSON.stringify({
+                        "input": {
+                            "files": ["https://cdn.cleanvoice.ai/assets/sample.mp3"], // استبدلها برابط ملفك المرفوع إذا توفر
+                            "config": { "studio_sound": true, "fillers": true }
+                        }
+                    })
                 });
 
-                if (!response.ok) throw new Error("فشل الاتصال بـ API");
-                const result = await response.json();
-                
-                pollJobStatus(result.id);
-
+                const data = await response.json();
+                if (data.id) {
+                    pollStatus(data.id);
+                } else {
+                    throw new Error("لم يتم استلام ID العملية");
+                }
             } catch (err) {
-                showNotification(err.message, "error");
+                alert("خطأ: " + err.message);
+                location.reload();
             }
         }
 
-        async function pollJobStatus(jobId) {
-            const pollUrl = `${API_BASE_URL}/edits/${jobId}`;
-            let completed = false;
+        async function pollStatus(id) {
+            let attempts = 0;
+            const maxAttempts = 40; // منع الحلقة اللانهائية
 
-            while (!completed) {
+            const check = setInterval(async () => {
+                attempts++;
                 try {
-                    const res = await fetch(pollUrl, {
+                    const res = await fetch(`${API_URL}/${id}`, {
                         headers: { "X-API-Key": API_KEY }
                     });
                     const data = await res.json();
 
                     if (data.status === 'SUCCESS') {
-                        // حماية ضد خطأ reading '0'
-                        let downloadUrl = null;
+                        // الحل الجذري لمشكلة الـ result الفارغ
+                        let finalLink = null;
+                        
                         if (data.result && data.result.files && data.result.files.length > 0) {
-                            downloadUrl = data.result.files[0];
+                            finalLink = data.result.files[0];
+                        } else if (data.download_url) {
+                            finalLink = data.download_url;
                         }
 
-                        if (downloadUrl) {
-                            updateProgressUI(100, "اكتمل بنجاح!");
-                            showResult(downloadUrl);
-                            completed = true;
+                        if (finalLink) {
+                            clearInterval(check);
+                            updateUI(100, "اكتمل بنجاح!");
+                            showResult(finalLink);
                         } else {
-                            // إذا كانت النتيجة فارغة {} كما في الرد الذي أرسلته
-                            updateProgressUI(95, "بانتظار توليد الرابط...");
-                            await new Promise(r => setTimeout(r, 3000));
+                            // إذا كانت SUCCESS ولكن لا يوجد رابط بعد (تحتاج وقت للتوليد)
+                            updateUI(95, "بانتظار تجهيز الرابط النهائي...");
                         }
                     } else if (data.status === 'FAILED') {
-                        throw new Error("فشلت المعالجة بالسيرفر");
+                        clearInterval(check);
+                        alert("فشلت المعالجة بالسيرفر");
+                        location.reload();
                     } else {
-                        const prog = data.progress || 30;
-                        updateProgressUI(prog, "جاري تحسين الجودة...");
-                        await new Promise(r => setTimeout(r, 4000));
+                        // تحديث النسبة بناءً على المحاولات
+                        let currentProgress = Math.min(90, 20 + (attempts * 5));
+                        updateUI(currentProgress, "جاري تحسين الصوت...");
                     }
+
+                    if (attempts >= maxAttempts) {
+                        clearInterval(check);
+                        alert("استغرقت العملية وقتاً طويلاً. يرجى التحقق من اتصالك.");
+                        location.reload();
+                    }
+
                 } catch (e) {
-                    showNotification(e.message, "error");
-                    break;
+                    console.error("Polling error", e);
                 }
-            }
+            }, 3000);
         }
 
-        function updateProgressUI(percent, status) {
+        function updateUI(percent, msg) {
             const circle = document.getElementById('progressCircle');
             const offset = 440 - (percent / 100) * 440;
             circle.style.strokeDashoffset = offset;
-            document.getElementById('progressText').innerText = Math.round(percent) + "%";
-            document.getElementById('progressStatus').innerText = status;
+            document.getElementById('progressPercent').innerText = Math.round(percent) + "%";
+            document.getElementById('statusMessage').innerText = msg;
         }
 
         function showResult(url) {
-            document.getElementById('progressSection').style.display = 'none';
+            document.getElementById('progressArea').style.display = 'none';
             document.getElementById('resultArea').style.display = 'block';
             document.getElementById('downloadBtn').onclick = () => window.open(url, '_blank');
-        }
-
-        function showNotification(msg, type) {
-            const n = document.getElementById('notification');
-            n.innerText = msg;
-            n.style.background = type === "error" ? "#ef4444" : "#10b981";
-            n.classList.add('show');
-            setTimeout(() => n.classList.remove('show'), 4000);
         }
     </script>
 </body>
