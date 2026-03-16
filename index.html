@@ -6,63 +6,61 @@
     <style>
         body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; }
         .box { background: #1e293b; padding: 2rem; border-radius: 20px; text-align: center; width: 400px; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #6366f1; border-radius: 50%; width: 40px; height: 40px; animation: spin 2s linear infinite; margin: 20px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .btn { background: #6366f1; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
     <div class="box">
-        <h2>نظام المعالجة المباشر</h2>
-        <div id="app">
-            <input type="text" id="fileUrl" placeholder="ضع رابط الملف هنا (يجب أن يكون رابطاً مباشراً)" style="width: 100%; padding: 10px; margin-bottom: 10px;">
-            <button onclick="processFile()" style="background: #6366f1; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">بدء المعالجة الفعلية</button>
-        </div>
+        <h2>معالجة ملف من جهازك</h2>
+        <input type="file" id="filePicker" style="margin: 20px 0;">
+        <button class="btn" onclick="uploadAndProcess()">رفع ومعالجة الملف</button>
         <div id="status" style="margin-top: 20px;"></div>
     </div>
 
     <script>
         const API_KEY = "cvk__v9UVUk_3Ds.36aaAgx3dg-laiHpdK5_JT5rQzY0_gyhKj3WX3lkMbQ";
-        const API_URL = "https://api.cleanvoice.ai/v2/edits";
+        
+        async function uploadAndProcess() {
+            const fileInput = document.getElementById('filePicker');
+            if (fileInput.files.length === 0) return alert("اختر ملفاً أولاً");
 
-        async function processFile() {
-            const fileUrl = document.getElementById('fileUrl').value;
-            if(!fileUrl) return alert("يرجى إدخال رابط ملف صوتي أو فيديو");
-
-            document.getElementById('app').innerHTML = '<div class="loader"></div><p>جاري إرسال الطلب للسيرفر...</p>';
+            const file = fileInput.files[0];
+            const status = document.getElementById('status');
             
-            try {
-                // 1. إرسال الطلب (بدون أي تجربة)
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'X-API-Key': API_KEY, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ "input": { "files": [fileUrl], "config": { "studio_sound": true } } })
-                });
+            // 1. رفع الملف لسيرفر مؤقت (File.io) للحصول على رابط
+            status.innerText = "جاري رفع الملف للسيرفر المؤقت...";
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const uploadRes = await fetch('https://file.io', { method: 'POST', body: formData });
+            const uploadData = await uploadRes.json();
+            const fileUrl = uploadData.link;
 
-                if (response.status === 402) throw new Error("رصيدك في Cleanvoice منتهي (خطأ 402)");
-                if (!response.ok) throw new Error("خطأ من السيرفر: " + response.status);
+            // 2. إرسال الرابط إلى Cleanvoice
+            status.innerText = "تم الرفع! جاري المعالجة بـ AI...";
+            const processRes = await fetch('https://api.cleanvoice.ai/v2/edits', {
+                method: 'POST',
+                headers: { 'X-API-Key': API_KEY, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ "input": { "files": [fileUrl], "config": { "studio_sound": true } } })
+            });
 
-                const data = await response.json();
-                pollFinalResult(data.id);
-
-            } catch (e) {
-                document.getElementById('status').innerHTML = `<p style="color:red">${e.message}</p>`;
-            }
+            if (processRes.status === 402) return status.innerText = "خطأ: رصيد الـ API منتهي.";
+            const processData = await processRes.json();
+            
+            // 3. المتابعة
+            pollStatus(processData.id);
         }
 
-        async function pollFinalResult(id) {
+        async function pollStatus(id) {
             const check = setInterval(async () => {
-                const res = await fetch(`${API_URL}/${id}`, { headers: { 'X-API-Key': API_KEY } });
+                const res = await fetch(`https://api.cleanvoice.ai/v2/edits/${id}`, { headers: { 'X-API-Key': API_KEY } });
                 const data = await res.json();
-                
                 document.getElementById('status').innerText = "الحالة: " + data.status;
 
                 if (data.status === 'SUCCESS') {
                     clearInterval(check);
                     const link = data.result.files ? data.result.files[0] : data.download_url;
-                    document.getElementById('app').innerHTML = `<h3>اكتملت المعالجة!</h3><a href="${link}" target="_blank">تحميل الملف</a>`;
-                } else if (data.status === 'FAILED') {
-                    clearInterval(check);
-                    document.getElementById('status').innerText = "فشلت المعالجة.";
+                    document.getElementById('status').innerHTML = `<a href="${link}" target="_blank" style="color:white">✅ اكتملت المعالجة - اضغط للتحميل</a>`;
                 }
             }, 5000);
         }
