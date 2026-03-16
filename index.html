@@ -3,14 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>محسن الصوت والفيديو الاحترافي</title>
+    <title>محسن الصوت والفيديو الاحترافي - مباشر</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        /* التنسيقات الأساسية (تم الحفاظ على جمالية التصميم مع إصلاحات الـ RTL) */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --primary: #6366f1;
             --primary-dark: #4f46e5;
@@ -30,37 +26,10 @@
             background: var(--background);
             color: var(--text);
             min-height: 100vh;
-            overflow-x: hidden;
         }
 
-        /* Animated Background */
-        .bg-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%);
-            animation: bgPulse 10s ease-in-out infinite;
-        }
+        .container { max-width: 1000px; margin: 0 auto; padding: 2rem; }
 
-        @keyframes bgPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-
-        header { padding: 2rem; text-align: center; }
-        .logo {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem 4rem; }
-
-        /* Upload Section */
         .upload-section {
             background: rgba(30, 41, 59, 0.8);
             backdrop-filter: blur(20px);
@@ -76,52 +45,14 @@
             padding: 4rem 2rem;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: 0.3s;
         }
 
-        .upload-zone.dragover {
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.1);
-        }
+        .upload-zone.dragover { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); }
 
-        /* Toggle Switch - Optimized for RTL */
-        .toggle {
-            position: relative;
-            width: 50px;
-            height: 26px;
-            background: var(--surface-light);
-            border-radius: 50px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
+        .media-preview { width: 100%; border-radius: 12px; margin-bottom: 1.5rem; background: #000; }
 
-        .toggle.active { background: var(--primary); }
-
-        .toggle-slider {
-            position: absolute;
-            top: 3px;
-            right: 3px; /* Start position for RTL */
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            transition: transform 0.3s ease;
-        }
-
-        /* Move to the left in RTL when active */
-        .toggle.active .toggle-slider { transform: translateX(-24px); }
-
-        /* Progress Ring Fixes */
-        .progress-ring-fill {
-            fill: none;
-            stroke: url(#gradient);
-            stroke-width: 8;
-            stroke-linecap: round;
-            stroke-dasharray: 440; /* Corrected: Circumference */
-            stroke-dashoffset: 440;
-            transition: stroke-dashoffset 0.5s ease;
-        }
-
+        /* الأزرار والتفاعلات */
         .btn {
             padding: 1rem 2rem;
             border-radius: 12px;
@@ -135,7 +66,51 @@
         }
 
         .btn-primary { background: var(--gradient); color: white; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--surface-light); }
+
+        /* دائرة التقدم المحدثة */
+        .progress-ring-fill {
+            fill: none;
+            stroke: url(#gradient);
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-dasharray: 440;
+            stroke-dashoffset: 440;
+            transition: stroke-dashoffset 0.3s linear;
+        }
+
+        .option-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 12px;
+        }
+
+        /* Toggle RTL Fix */
+        .toggle {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: var(--surface-light);
+            border-radius: 50px;
+            cursor: pointer;
+        }
+        .toggle.active { background: var(--primary); }
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        .toggle.active .toggle-slider { transform: translateX(-24px); }
 
         .notification {
             position: fixed;
@@ -145,181 +120,216 @@
             padding: 1rem 2rem;
             border-radius: 12px;
             z-index: 1000;
-            opacity: 0;
-            transition: 0.3s;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        .notification.success { background: rgba(16, 185, 129, 0.9); }
-        .notification.error { background: rgba(239, 68, 68, 0.9); }
-
-        /* Existing utility styles from your code... */
-        .media-preview { width: 100%; border-radius: 12px; margin-bottom: 1rem; background: #000; }
-        .option-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid var(--surface-light); padding-bottom: 1rem; }
+        .notification.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
-    <div class="bg-animation"></div>
-    
-    <svg width="0" height="0" style="position:absolute">
-        <defs>
-            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" style="stop-color:#6366f1" />
-                <stop offset="100%" style="stop-color:#ec4899" />
-            </linearGradient>
-        </defs>
-    </svg>
+    <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="gradient"><stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#ec4899"/></linearGradient></defs></svg>
 
-    <div id="notification" class="notification">
-        <span id="notif-message"></span>
-    </div>
-
-    <header>
-        <h1 class="logo">🎵 AudioPro Enhancer</h1>
-    </header>
+    <div id="notification" class="notification"></div>
 
     <div class="container">
+        <header style="text-align: center; margin-bottom: 3rem;">
+            <h1 style="font-size: 2.5rem; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🎵 AudioPro Live</h1>
+        </header>
+
         <div class="upload-section">
-            <div class="upload-zone" id="uploadZone">
-                <span style="font-size: 3rem;">📁</span>
-                <h2>اسحب الملف هنا أو انقر للاختيار</h2>
-                <input type="file" id="fileInput" hidden accept="audio/*,video/*">
+            <div id="uploadStage">
+                <div class="upload-zone" id="uploadZone">
+                    <span style="font-size: 3rem;">📁</span>
+                    <h2>اختر ملف الصوت أو الفيديو لبدء التحسين</h2>
+                    <p style="color: var(--text-muted); margin-top: 1rem;">الحد الأقصى للحجم: 500 ميجابايت</p>
+                    <input type="file" id="fileInput" hidden accept="audio/*,video/*">
+                </div>
             </div>
 
-            <div id="filePreview" style="display:none; margin-top: 2rem;">
-                <div id="mediaContainer">
-                    <video id="videoPreview" class="media-preview" controls style="display:none"></video>
-                    <audio id="audioPreview" class="media-preview" controls style="display:none"></audio>
-                </div>
-
-                <div class="options-panel">
+            <div id="previewStage" style="display:none;">
+                <video id="videoPreview" class="media-preview" controls style="display:none"></video>
+                <audio id="audioPreview" class="media-preview" controls style="display:none"></audio>
+                
+                <div class="options-panel" style="margin-bottom: 2rem;">
                     <div class="option-row">
-                        <span>🎚️ إزالة الضوضاء</span>
-                        <div class="toggle active" onclick="this.classList.toggle('active')" id="noiseReduction">
+                        <span>🎚️ إزالة الضوضاء الخلفية (AI)</span>
+                        <div class="toggle active" onclick="this.classList.toggle('active')" id="optNoise">
                             <div class="toggle-slider"></div>
                         </div>
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 1rem; justify-content: center;">
-                    <button class="btn btn-primary" id="enhanceBtn" onclick="startEnhancement()">✨ بدء التحسين</button>
-                    <button class="btn btn-secondary" onclick="resetUpload()">🗑️ إلغاء</button>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" id="startBtn" onclick="handleProductionProcess()">🚀 معالجة الملف الآن</button>
+                    <button class="btn btn-secondary" onclick="resetApp()">إلغاء</button>
                 </div>
             </div>
 
-            <div id="progressSection" style="display:none; text-align: center; margin-top: 2rem;">
+            <div id="progressStage" style="display:none; text-align: center;">
                 <svg width="150" height="150" style="transform: rotate(-90deg)">
                     <circle cx="75" cy="75" r="70" stroke="#334155" stroke-width="8" fill="none" />
                     <circle id="progressCircle" cx="75" cy="75" r="70" class="progress-ring-fill" />
                 </svg>
-                <h3 id="progressStatus">جاري الرفع...</h3>
-                <p id="progressPercent">0%</p>
+                <h2 id="statusText" style="margin-top: 1rem;">جاري الرفع...</h2>
+                <p id="percentText" style="font-size: 1.5rem; font-weight: bold; color: var(--primary);">0%</p>
+            </div>
+
+            <div id="resultStage" style="display:none; text-align: center;">
+                <div style="font-size: 4rem; color: var(--success);">✅</div>
+                <h2>تم التحسين بنجاح!</h2>
+                <div style="margin: 2rem 0;">
+                    <button class="btn btn-primary" id="downloadBtn">⬇️ تحميل الملف المحسن</button>
+                </div>
+                <button class="btn btn-secondary" onclick="resetApp()">معالجة ملف آخر</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Use a placeholder for the API Key - don't hardcode in production
         const API_KEY = 'cvk_K9zHzC4T3jA.PwUHNtpD2s6jUibzKNS6O5IBxpUpqYAuhTlLB58Z-uU';
-        const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB
+        const API_BASE = 'https://api.clarityvoice.ai/v1';
 
         let currentFile = null;
-        let previewUrl = null;
+        let objectUrl = null;
 
-        const uploadZone = document.getElementById('uploadZone');
-        const fileInput = document.getElementById('fileInput');
+        // اختصارات الواجهة
+        const $ = (id) => document.getElementById(id);
+        const hideAll = () => ['uploadStage', 'previewStage', 'progressStage', 'resultStage'].forEach(s => $(s).style.display = 'none');
 
-        uploadZone.onclick = () => fileInput.click();
-
-        fileInput.onchange = (e) => {
-            if (e.target.files.length > 0) handleFile(e.target.files[0]);
+        // إدارة اختيار الملف
+        $('uploadZone').onclick = () => $('fileInput').click();
+        $('fileInput').onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 500 * 1024 * 1024) return showNotif('الملف كبير جداً', 'error');
+                currentFile = file;
+                showPreview();
+            }
         };
 
-        // Fix: Clean memory and UI
-        function resetUpload() {
-            if (previewUrl) URL.revokeObjectURL(previewUrl); // Memory Leak Fix
-            previewUrl = null;
-            currentFile = null;
-            fileInput.value = '';
-            
-            document.getElementById('filePreview').style.display = 'none';
-            document.getElementById('progressSection').style.display = 'none';
-            uploadZone.style.display = 'block';
-            
-            document.getElementById('videoPreview').src = '';
-            document.getElementById('audioPreview').src = '';
-        }
+        function showPreview() {
+            hideAll();
+            $('previewStage').style.display = 'block';
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
+            objectUrl = URL.createObjectURL(currentFile);
 
-        function handleFile(file) {
-            // Validation
-            if (file.size > MAX_FILE_SIZE) {
-                showNotification('حجم الملف كبير جداً (الأقصى 500MB)', 'error');
-                return;
-            }
-
-            currentFile = file;
-            if (previewUrl) URL.revokeObjectURL(previewUrl);
-            previewUrl = URL.createObjectURL(file);
-
-            uploadZone.style.display = 'none';
-            const preview = document.getElementById('filePreview');
-            preview.style.display = 'block';
-
-            const video = document.getElementById('videoPreview');
-            const audio = document.getElementById('audioPreview');
-
-            if (file.type.startsWith('video/')) {
-                video.src = previewUrl;
-                video.style.display = 'block';
-                audio.style.display = 'none';
+            if (currentFile.type.startsWith('video/')) {
+                $('videoPreview').src = objectUrl;
+                $('videoPreview').style.display = 'block';
+                $('audioPreview').style.display = 'none';
             } else {
-                audio.src = previewUrl;
-                audio.style.display = 'block';
-                video.style.display = 'none';
+                $('audioPreview').src = objectUrl;
+                $('audioPreview').style.display = 'block';
+                $('videoPreview').style.display = 'none';
             }
         }
 
-        // Progress Animation Fix
-        function updateProgressUI(percent) {
-            const circle = document.getElementById('progressCircle');
-            const text = document.getElementById('progressPercent');
-            const circumference = 2 * Math.PI * 70;
+        // العملية الأساسية للـ API
+        async function handleProductionProcess() {
+            hideAll();
+            $('progressStage').style.display = 'block';
             
-            const offset = circumference - (percent / 100) * circumference;
-            circle.style.strokeDashoffset = offset;
-            text.textContent = `${Math.round(percent)}%`;
+            try {
+                // 1. الرفع
+                updateUI(10, 'جاري رفع الملف...');
+                const jobId = await uploadFile();
+
+                // 2. طلب التحسين
+                updateUI(30, 'بدء معالجة الذكاء الاصطناعي...');
+                await requestEnhancement(jobId);
+
+                // 3. المتابعة (Polling)
+                const downloadUrl = await pollStatus(jobId);
+
+                // 4. النجاح
+                updateUI(100, 'اكتملت المعالجة!');
+                showResult(downloadUrl);
+
+            } catch (err) {
+                showNotif(err.message, 'error');
+                resetApp();
+            }
         }
 
-        async function startEnhancement() {
-            document.getElementById('filePreview').style.display = 'none';
-            document.getElementById('progressSection').style.display = 'block';
-            
-            // Simulation for demonstration (keeping your logic structure)
-            let p = 0;
-            const interval = setInterval(() => {
-                p += 5;
-                updateProgressUI(p);
-                if (p >= 100) {
-                    clearInterval(interval);
-                    showNotification('تم التحسين بنجاح (وضع تجريبي)', 'success');
-                }
-            }, 200);
+        async function uploadFile() {
+            const formData = new FormData();
+            formData.append('file', currentFile);
+
+            const res = await fetch(`${API_BASE}/upload`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${API_KEY}` },
+                body: formData
+            });
+
+            if (!res.ok) throw new Error('فشل الرفع إلى السيرفر');
+            const data = await res.json();
+            return data.job_id || data.id;
         }
 
-        function showNotification(msg, type) {
-            const notif = document.getElementById('notification');
-            document.getElementById('notif-message').textContent = msg;
-            notif.className = `notification show ${type}`;
-            setTimeout(() => notif.classList.remove('show'), 3000);
+        async function requestEnhancement(jobId) {
+            const res = await fetch(`${API_BASE}/enhance`, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': `Bearer ${API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    job_id: jobId,
+                    options: { noise_reduction: $('optNoise').classList.contains('active') }
+                })
+            });
+            if (!res.ok) throw new Error('فشل بدء عملية التحسين');
         }
 
-        // Handle Drag & Drop
-        uploadZone.ondragover = (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); };
-        uploadZone.ondragleave = () => uploadZone.classList.remove('dragover');
-        uploadZone.ondrop = (e) => {
-            e.preventDefault();
-            uploadZone.classList.remove('dragover');
-            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
-        };
+        async function pollStatus(jobId) {
+            let attempts = 0;
+            while (attempts < 60) { // حد أقصى 2 دقيقة
+                const res = await fetch(`${API_BASE}/status/${jobId}`, {
+                    headers: { 'Authorization': `Bearer ${API_KEY}` }
+                });
+                const data = await res.json();
+
+                if (data.status === 'completed') return data.download_url;
+                if (data.status === 'failed') throw new Error('فشلت المعالجة بالسيرفر');
+
+                // تحديث تدريجي للتقدم بين 40% و 90%
+                let progress = 40 + (attempts * 0.8);
+                updateUI(Math.min(progress, 95), 'جاري تنقية الصوت وتحسين الجودة...');
+
+                await new Promise(r => setTimeout(r, 2000));
+                attempts++;
+            }
+            throw new Error('انتهت مهلة الانتظار');
+        }
+
+        function showResult(url) {
+            hideAll();
+            $('resultStage').style.display = 'block';
+            $('downloadBtn').onclick = () => window.open(url, '_blank');
+        }
+
+        function updateUI(percent, status) {
+            const offset = 440 - (percent / 100) * 440;
+            $('progressCircle').style.strokeDashoffset = offset;
+            $('percentText').textContent = `${Math.round(percent)}%`;
+            $('statusText').textContent = status;
+        }
+
+        function resetApp() {
+            hideAll();
+            currentFile = null;
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
+            $('uploadStage').style.display = 'block';
+            $('fileInput').value = '';
+            updateUI(0, '');
+        }
+
+        function showNotif(msg, type) {
+            const n = $('notification');
+            n.textContent = msg;
+            n.style.background = type === 'success' ? 'var(--success)' : 'var(--error)';
+            n.classList.add('show');
+            setTimeout(() => n.classList.remove('show'), 4000);
+        }
     </script>
 </body>
 </html>
